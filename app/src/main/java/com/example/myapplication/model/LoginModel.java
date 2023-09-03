@@ -25,31 +25,14 @@ public class LoginModel {
 
     public void login(String email, String pass){
         udb.login(email, pass, task -> {
-            if (task.isSuccessful()){
-                udb.CheckUserTypeServer(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        try {
-                            String s = response.body().string();
-                            Gson gson = new Gson();
-                            UserDB.VolunteerType VolunteerType = gson.fromJson(s, UserDB.VolunteerType.class);
-                            if (VolunteerType.getType()){
-                                activity.goVolHome();
-                            }
-                            else {
-                                activity.goAssHome();
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        System.out.println("failure");
-                    }
+            if (task.isSuccessful())
+                udb.CheckUserType(task1 -> {
+                    DocumentSnapshot document = task1.getResult();
+                    if (document.exists())
+                        activity.goVolHome();
+                    else
+                        activity.goAssHome();
                 });
-            }
             else
                 activity.FailureLogin();
         });
